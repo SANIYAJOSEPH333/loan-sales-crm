@@ -1,5 +1,5 @@
 from typing import List, Union
-from pydantic import AnyHttpUrl, validator
+from pydantic import AnyHttpUrl, validator, field_validator
 from pydantic_settings import BaseSettings
 import os
 import json
@@ -22,6 +22,13 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:8000"
     ]
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        if isinstance(v, str) and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
 
     class Config:
         env_file = ".env"
